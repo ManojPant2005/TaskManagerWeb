@@ -1,0 +1,136 @@
+﻿@page "/admin/create-user"
+@inject NavigationManager navigation
+@inject QuizAuthStateProvider quiz
+@inject IAuthApi api
+
+<div class="container">
+    <div class="row vh-90">
+        <div class="col-sm-4 mx-auto my-auto border bg-white shadow-lg">
+
+            <div class="mt-3">
+                <h1 class="h3 fw-bold">Create User | Admin Panel</h1>
+            </div>
+            <hr />
+
+            @if (!quiz.IsLoggedIn || !quiz.IsInRole("Admin"))
+            {
+                <div class="text-center text-danger">
+                    <p>You are not authorized to access this page.</p>
+                </div>
+            }
+            else
+            {
+                <EditForm Model="_model" OnValidSubmit="CreateUserAsync">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label class="form-label">Name: </label>
+                        <InputText @bind-Value="@_model.Name" class="form-control" />
+                        <ValidationMessage For="()=> _model.Name" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email: </label>
+                        <InputText @bind-Value="@_model.Email" class="form-control" />
+                        <ValidationMessage For="()=> _model.Email" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Phone: </label>
+                        <InputText @bind-Value="@_model.Phone" class="form-control" />
+                        <ValidationMessage For="()=> _model.Phone" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password: </label>
+                        <InputText type="password" @bind-Value="@_model.PasswordHash" class="form-control" />
+                        <ValidationMessage For="()=> _model.PasswordHash" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Role: </label>
+                        <InputSelect @bind-Value="_model.Role" class="form-control">
+                            <option value="Manager">Manager</option>
+                            <option value="Department">Department</option>
+                        </InputSelect>
+                        <ValidationMessage For="()=> _model.Role" />
+                    </div>
+
+                    @if (_error != null)
+                    {
+                        <div class="mb-3 bg-danger text-white p-2">
+                            <p>@_error</p>
+                        </div>
+                    }
+
+                    <div class="mb-3 d-flex justify-content-between">
+                        @if (!_isBusy)
+                        {
+                            <button type="submit" class="btn btn-success">Create User</button>
+                        }
+                        else
+                        {
+                            <button type="button" disabled class="btn btn-secondary">Creating User...</button>
+                        }
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+@if (ShowSuccessAlert)
+{
+    <TM.Web.Components.Modal Title="Success" OnActionButtonClick="OnModalClose" OnCancelButtonClick="OnModalClose">
+        <p class="h5 text-success">User account has been created successfully.</p>
+    </TM.Web.Components.Modal>
+}
+
+@code {
+    private RegisterDto _model = new();
+    private bool _isBusy;
+    private string? _error;
+    private bool ShowSuccessAlert;
+
+    protected override void OnInitialized()
+    {
+        // Ensure only Admin can access this page
+        if (!quiz.IsLoggedIn || !quiz.IsInRole("Admin"))
+        {
+            navigation.NavigateTo("/auth/login", replace: true);
+        }
+    }
+
+    private async Task CreateUserAsync()
+    {
+        _error = null;
+        _isBusy = true;
+
+        try
+        {
+            // Make sure the role is assigned correctly
+            var apiResponse = await api.RegisterAsync(_model);
+            if (!apiResponse.IsSuccess)
+            {
+                _error = apiResponse.ErrorMessage;
+                return;
+            }
+            ShowSuccessAlert = true;
+        }
+        catch (Exception ex)
+        {
+            _error = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private void OnModalClose()
+    {
+        _model = new();
+        ShowSuccessAlert = false;
+        navigation.NavigateTo("/admin/create-user", replace: true);
+    }
+}

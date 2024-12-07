@@ -1,0 +1,100 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@using TM.Shared
+@inject QuizAuthStateProvider quiz
+@inject NavigationManager navigation
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">TASK MANAGER
+
+        </a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                Home
+            </NavLink>
+        </div>
+
+        <AuthorizeView>
+            <Authorized Context="authorizedContext">
+                <!-- Admin Sidebar -->
+                <AuthorizeView Roles="@(nameof(UserRole.Admin))" Context="adminContext">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="admin/dashboard">
+                            Admin Section
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="admin/create-user">
+                            Create User
+                        </NavLink>
+                    </div>
+                </AuthorizeView>
+
+                <!-- Manager Sidebar -->
+                <AuthorizeView Roles="@(nameof(UserRole.Admin) + "," + nameof(UserRole.Manager))" Context="managerContext">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="manager/dashboard">
+                            Manager Section
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="manage-departments-users">
+                            Manage Departments
+                        </NavLink>
+                    </div>
+                </AuthorizeView>
+
+                <!-- Department Sidebar -->
+                <AuthorizeView Roles="@(nameof(UserRole.Admin) + "," + nameof(UserRole.Manager) + "," + nameof(UserRole.Department))" Context="departmentContext">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="department/dashboard">
+                            Department Section
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="manage-departments">
+                            My Departments
+                        </NavLink>
+                    </div>
+                </AuthorizeView>
+
+                <!-- Logout -->
+                <div class="nav-item px-3">
+                    <a role="button" class="nav-link" @onclick="Logout">
+                        Logout
+                    </a>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private async Task Logout()
+    {
+        await quiz.SetLogoutAsync();
+        navigation.NavigateTo("auth/login", replace: true);
+    }
+}

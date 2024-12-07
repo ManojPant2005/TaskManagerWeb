@@ -1,0 +1,136 @@
+﻿@page "/manage-departments"
+
+@inject IDepartmentApi department
+
+<SectionContent SectionName="pageTitle">Manage Departments</SectionContent>
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-4">
+            <EditForm Model="_department" OnValidSubmit="SaveCategoryAsync">
+                <DataAnnotationsValidator />
+
+                <div class="bg-white p-3">
+                    <div class="">
+                        <h5 class="m-0 fw-bold">Add/Edit Department</h5>
+                        <hr />
+                        <div class="">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Department Name
+                                </label>
+                                <InputText @bind-Value="@_department.Name" class="form-control form-control-sm" />
+                                <ValidationMessage For="() => _department.Name" />
+                            </div>
+                            @if (ErrorMessage != null)
+                            {
+                                <div class="mb-3 border border-danger border-1 d-flex justify-content-between gap-2 align-items-start">
+                                    <p class="m-0 p-1">@ErrorMessage</p>
+                                    <button type="button" class="btn btn btn-danger" @onclick="() => ErrorMessage = null ">X</button>
+                                </div>
+                            }
+                        </div>
+                        <div class="d-flex justify-content-between align-content-center">
+                            @if (!_isBusy)
+                            {
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => _department = new()">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-success">Save Department</button>
+                            }
+                            else
+                            {
+                                <button type="button" disabled class="btn btn-sm btn-secondary">Cancel</button>
+                                <button type="button" disabled class="btn btn-sm btn-secondary">Saving Department..</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+        <div class="col-sm-8 ms-auto">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (_departments.Length == 0)
+                    {
+                        <tr>
+                            <td colspan="4">
+                                <p class="text-danger h5">No Department Found</p>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        int number = 1;
+                        @foreach (var cat in _departments)
+                        {
+                            <tr>
+                                <td>@(number++)</td>
+                                <td>@cat.Id</td>
+                                <td>@cat.Name</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary" @onclick="() => OnEditCategory(cat)">Edit</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private DepartmentDto[] _departments = [];
+    private DepartmentDto _department = new();
+    private bool _isBusy;
+    private string? ErrorMessage;
+    protected override async Task OnInitializedAsync() => await LoadCategoriesAsync();
+
+
+    private void OnEditCategory(DepartmentDto dp)
+    {
+        _department = dp;
+    }
+    private async Task LoadCategoriesAsync()
+    {
+        _departments = await department.GetDepartmentAsync();
+    }
+    private async Task SaveCategoryAsync()
+    {
+        try
+        {
+            _isBusy = true;
+            var response = await department.SaveDepartmentAsync(_department);
+            if (!response.IsSuccess)
+            {
+                //Error alert on UI
+                ErrorMessage = response.ErrorMessage ?? "Unknown error in saving category";
+                return;
+
+            }
+            //Reset the form and reload the category data
+
+            _department = new();
+            await LoadCategoriesAsync();
+        }
+        catch (Exception ex)
+        {
+
+            //show error alert on UI
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+}
