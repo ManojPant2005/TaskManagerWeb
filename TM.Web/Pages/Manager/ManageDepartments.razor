@@ -1,4 +1,4 @@
-﻿@page "/manage-departments"
+﻿@page "/manager-departments"
 
 @inject IDepartmentApi department
 
@@ -8,7 +8,7 @@
 <div class="container">
     <div class="row">
         <div class="col-sm-4">
-            <EditForm Model="_department" OnValidSubmit="SaveCategoryAsync">
+            <EditForm Model="_department" OnValidSubmit="SaveDepartmentAsync">
                 <DataAnnotationsValidator />
 
                 <div class="bg-white p-3">
@@ -23,6 +23,22 @@
                                 <InputText @bind-Value="@_department.Name" class="form-control form-control-sm" />
                                 <ValidationMessage For="() => _department.Name" />
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Subject Name
+                                </label>
+                                <InputText @bind-Value="@_department.Subject" class="form-control form-control-sm" />
+                                <ValidationMessage For="() => _department.Subject" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Access Code
+                                </label>
+                                <InputText @bind-Value="@_department.AccessCode" class="form-control form-control-sm" />
+                                <ValidationMessage For="() => _department.AccessCode" />
+                            </div>
+
+
                             @if (ErrorMessage != null)
                             {
                                 <div class="mb-3 border border-danger border-1 d-flex justify-content-between gap-2 align-items-start">
@@ -54,6 +70,8 @@
                         <th>#</th>
                         <th>Id</th>
                         <th>Name</th>
+                        <th>Subject</th>
+                        <th>Access</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -75,8 +93,10 @@
                                 <td>@(number++)</td>
                                 <td>@cat.Id</td>
                                 <td>@cat.Name</td>
+                                <td>@cat.Subject</td>
+                                <td>@cat.AccessCode</td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-primary" @onclick="() => OnEditCategory(cat)">Edit</button>
+                                    <button type="button" class="btn btn-sm btn-primary" @onclick="() => OnEditDepartment(cat)">Edit</button>
                                 </td>
                             </tr>
                         }
@@ -95,7 +115,7 @@
     protected override async Task OnInitializedAsync() => await LoadCategoriesAsync();
 
 
-    private void OnEditCategory(DepartmentDto dp)
+    private void OnEditDepartment(DepartmentDto dp)
     {
         _department = dp;
     }
@@ -103,7 +123,7 @@
     {
         _departments = await department.GetDepartmentAsync();
     }
-    private async Task SaveCategoryAsync()
+    private async Task SaveDepartmentAsync()
     {
         try
         {
@@ -111,7 +131,7 @@
             var response = await department.SaveDepartmentAsync(_department);
             if (!response.IsSuccess)
             {
-                ErrorMessage = response.ErrorMessage ?? "Unknown error in saving category";
+                ErrorMessage = response.ErrorMessage ?? "Unknown error in saving department";
                 return;
 
             }

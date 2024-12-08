@@ -11,8 +11,8 @@ using TM.Api.Data;
 namespace TM.Api.Data.Migrations
 {
     [DbContext(typeof(TaskContext))]
-    [Migration("20241207161237_AddDepartmentTable")]
-    partial class AddDepartmentTable
+    [Migration("20241208025719_RecreateDepartment")]
+    partial class RecreateDepartment
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,7 +32,17 @@ namespace TM.Api.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AccessCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Subject")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -40,6 +50,29 @@ namespace TM.Api.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Departments");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AccessCode = "PHY123",
+                            Name = "Physics Dept",
+                            Subject = "Physics"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AccessCode = "HIS123",
+                            Name = "History Dept",
+                            Subject = "History"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AccessCode = "MTH123",
+                            Name = "Maths Dept",
+                            Subject = "Maths"
+                        });
                 });
 
             modelBuilder.Entity("TM.Api.Data.Entities.User", b =>
@@ -88,7 +121,7 @@ namespace TM.Api.Data.Migrations
                             Email = "university@email.com",
                             IsApproved = true,
                             Name = "University Admin",
-                            PasswordHash = "AQAAAAIAAYagAAAAEKeJWRlpOkv4jRIdVW84j3Hkc1uWdF7kWVLaihou5J4BiG4yZSbfjEG3Qt8UW2oODg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKhLuoL79I/4lQIz+W3Jx+wepB/poTxihlOcD9MFg0d5uf+wqPsbUlrN8UPJC8Fyvg==",
                             Phone = "1234567890",
                             Role = "Admin"
                         },
@@ -98,7 +131,7 @@ namespace TM.Api.Data.Migrations
                             Email = "manager@email.com",
                             IsApproved = true,
                             Name = "University Manager",
-                            PasswordHash = "AQAAAAIAAYagAAAAEA9zqMZ3BdQLzL0iJm6OsnWF7mXiTGg245GPIG5WvIcYdhMqJpax2u2s2hh6LaqI3Q==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEIaTBKjdxH//H2aJNoPubiECMc2qml3Q3uEhl/gn9xiXb16k7EFWYcwmioqrNZLEpA==",
                             Phone = "0987654321",
                             Role = "Manager"
                         },
@@ -108,7 +141,7 @@ namespace TM.Api.Data.Migrations
                             Email = "department@email.com",
                             IsApproved = true,
                             Name = "Department Head",
-                            PasswordHash = "AQAAAAIAAYagAAAAEEFF2wkkfSaH2oJTG5X6bmrXZjqGnNI8wBpi+ka6/VfQBpfNNoieu+MTX1+RWRoIyA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEIKQ7SXZXEYFiJbOAFb+Jma6nh7TyoFOj0ZG6FxYsLcCvA5Z4bWRs9kB0sGSs5mPVw==",
                             Phone = "1122334455",
                             Role = "Department"
                         });

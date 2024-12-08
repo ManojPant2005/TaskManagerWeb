@@ -18,6 +18,8 @@ builder.Services.AddAuthorizationCore();
 
 ConfigureRefit(builder.Services);
 
+
+
 await builder.Build().RunAsync();
 
 static void ConfigureRefit(IServiceCollection services)

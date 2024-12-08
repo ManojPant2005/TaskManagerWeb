@@ -14,6 +14,7 @@ namespace TM.Api.Data
             _password = password;
         }
         public DbSet<User> Users { get; set; }
+
         public DbSet<Department> Departments { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -23,6 +24,12 @@ namespace TM.Api.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Department>().HasData(
+            new Department { Id = 1, Name = "Physics Dept", Subject = "Physics", AccessCode = "PHY123" },
+            new Department { Id = 2, Name = "History Dept", Subject = "History", AccessCode = "HIS123" },
+            new Department { Id = 3, Name = "Maths Dept", Subject = "Maths", AccessCode = "MTH123" }
+           );
 
             var adminUser = new User
             {
@@ -62,6 +69,8 @@ namespace TM.Api.Data
             // Seed Users
             modelBuilder.Entity<User>()
                 .HasData(adminUser, managerUser, departmentUser);
+
+
         }
     }
 }

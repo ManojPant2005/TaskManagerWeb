@@ -25,37 +25,51 @@ namespace TM.Api.Services
 
             if (dept.Id == 0)
             {
-
-                var cat = new Department
+                var department = new Department
                 {
-                    Name = dept.Name
+                    Name = dept.Name,
+                    Subject = dept.Subject,
+                    AccessCode = dept.AccessCode
                 };
-                _task.Departments.Add(cat);
+                _task.Departments.Add(department);
             }
             else
             {
-                var dbCat = await _task.Departments
-                           .FirstOrDefaultAsync(c => c.Id == dept.Id);
-                if (dbCat == null)
+                var dbDepartment = await _task.Departments.FirstOrDefaultAsync(c => c.Id == dept.Id);
+                if (dbDepartment == null)
                 {
                     return QuizApiResponse.Fail("Department does not exist");
                 }
-                dbCat.Name = dept.Name;
-                _task.Departments.Update(dbCat);
+                dbDepartment.Name = dept.Name;
+                dbDepartment.Subject = dept.Subject;
+                dbDepartment.AccessCode = dept.AccessCode;
+
+                _task.Departments.Update(dbDepartment);
             }
             await _task.SaveChangesAsync();
             return QuizApiResponse.Success();
+
+
         }
 
         public async Task<DepartmentDto[]> GetDepartmentsAsync() =>
                await _task.Departments
-              .AsNoTracking()
-              .Select(c => new DepartmentDto
-              {
-                  Name = c.Name,
-                  Id = c.Id
-              })
-             .ToArrayAsync();
+                  .AsNoTracking()
+                  .Select(c => new DepartmentDto
+                  {
+                      Name = c.Name,
+                      Subject = c.Subject, // Include the Subject field
+                      AccessCode = c.AccessCode,
+                      Id = c.Id
+                  })
+                 .ToArrayAsync();
+
+        public async Task<bool> ValidateSubjectAccessAsync(string subject, string accessCode)
+        {
+            return await _task.Departments
+                .AsNoTracking()
+                .AnyAsync(d => d.Subject == subject && d.AccessCode == accessCode);
+        }
 
     }
 }

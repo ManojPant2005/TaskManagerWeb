@@ -48,10 +48,13 @@ builder.Services.AddCors(options =>
         var allowedOriginsStr = builder.Configuration.GetValue<string>("AllowedOrigins");
         var allowedOrigins = allowedOriginsStr.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         p.WithOrigins(allowedOrigins)
-       .AllowAnyHeader()
-       .AllowAnyMethod();
+         .AllowAnyHeader()
+         .AllowAnyMethod()
+         .AllowCredentials(); // Allow credentials if necessary
     });
 });
+
+
 builder.Services.AddAuthorization();
 
 
