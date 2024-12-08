@@ -111,12 +111,10 @@
             var response = await department.SaveDepartmentAsync(_department);
             if (!response.IsSuccess)
             {
-                //Error alert on UI
                 ErrorMessage = response.ErrorMessage ?? "Unknown error in saving category";
                 return;
 
             }
-            //Reset the form and reload the category data
 
             _department = new();
             await LoadCategoriesAsync();
@@ -124,7 +122,6 @@
         catch (Exception ex)
         {
 
-            //show error alert on UI
             ErrorMessage = ex.Message;
         }
         finally

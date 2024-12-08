@@ -20,13 +20,11 @@ namespace TM.Api.Services
                           .AsNoTracking()
                           .AnyAsync(c => c.Name == dept.Name && c.Id != dept.Id))
             {
-                //category with same name already exist
                 return QuizApiResponse.Fail("Department with same name exists already"); ;
             }
 
             if (dept.Id == 0)
             {
-                //create new category
 
                 var cat = new Department
                 {
@@ -36,13 +34,10 @@ namespace TM.Api.Services
             }
             else
             {
-                //update existing category
-
                 var dbCat = await _task.Departments
                            .FirstOrDefaultAsync(c => c.Id == dept.Id);
                 if (dbCat == null)
                 {
-                    //Department does not exist
                     return QuizApiResponse.Fail("Department does not exist");
                 }
                 dbCat.Name = dept.Name;

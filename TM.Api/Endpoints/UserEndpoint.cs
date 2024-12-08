@@ -1,5 +1,4 @@
-﻿
-using TM.Api.Services;
+﻿using TM.Api.Services;
 using TM.Shared;
 
 namespace TM.Api.Endpoints
@@ -11,15 +10,22 @@ namespace TM.Api.Endpoints
             var group = app.MapGroup("/api/users")
                            .RequireAuthorization(p => p.RequireRole(nameof(UserRole.Admin)));
 
-            group.MapGet("", async (UserApprovedFilter filter, int startIndex, int PazeSize, UserService service) =>
-            Results.Ok(await service.GetUsersAsync(filter, startIndex, PazeSize)));
+            group.MapGet("", async (int startIndex, int pageSize, UserService service) =>
+            Results.Ok(await service.GetUsersAsync(startIndex, pageSize)));
 
             group.MapPatch("{userId:int}/toggle-status", async (int userId, UserService service) =>
             {
                 await service.ToggleUserApprovedStatus(userId);
-                return Results.Ok();    
+                return Results.Ok();
             });
-            
+
+            group.MapDelete("{userId:int}", async (int userId, UserService service) =>
+            {
+                await service.DeleteUserAsync(userId);
+                return Results.Ok();
+            });
+
+
             return app;
         }
     }
