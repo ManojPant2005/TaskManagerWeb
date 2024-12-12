@@ -1,2 +1,181 @@
 ﻿@page "/department/dashboard"
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager Navigation
+@inject IClassApi ClassApi
 
+<h3>Manage Classes</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div>
+        <h4>Classes for Department: @DepartmentId</h4>
+
+        <div class="d-flex align-items-center mb-3">
+            <InputText @bind-Value="searchTerm" @oninput="OnSearchTermChanged" placeholder="Search classes..." class="form-control me-2" />
+            <button class="btn btn-outline-primary" @onclick="ClearSearch" disabled="@string.IsNullOrWhiteSpace(searchTerm)">Clear</button>
+        </div>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (filteredClasses.Any())
+                {
+                    @foreach (var classItem in paginatedClasses)
+                    {
+                        <tr>
+                            <td>@classItem.Name</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm me-2" @onclick="() => EditClass(classItem)">Edit</button>
+                                <button class="btn btn-danger btn-sm" @onclick="() => DeleteClass(classItem.Id)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="2">No classes found.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <button class="btn btn-secondary me-2" @onclick="PrevPage" disabled="@(!HasPrevPage)">Previous</button>
+            <span>Page @currentPage of @totalPages</span>
+            <button class="btn btn-secondary ms-2" @onclick="NextPage" disabled="@(!HasNextPage)">Next</button>
+        </div>
+
+        <h4 class="mt-4">Add/Update Class</h4>
+        <EditForm Model="classModel" OnValidSubmit="SaveClass">
+            <DataAnnotationsValidator />
+            <InputText @bind-Value="classModel.Name" placeholder="Class Name" class="form-control mb-2" />
+            <button type="submit" class="btn btn-success">Save</button>
+        </EditForm>
+    </div>
+}
+
+@code {
+    private bool isLoading = true;
+    private string searchTerm = string.Empty;
+    private ClassDto[] classes = Array.Empty<ClassDto>();
+    private List<ClassDto> filteredClasses = new();
+    private List<ClassDto> paginatedClasses = new();
+    private ClassDto classModel = new();
+    private int DepartmentId;
+
+    private int currentPage = 1;
+    private int pageSize = 5;
+    private int totalPages => (int)Math.Ceiling((double)filteredClasses.Count / pageSize);
+
+    private bool HasPrevPage => currentPage > 1;
+    private bool HasNextPage => currentPage < totalPages;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("departmentId", out var depIdString) &&
+            int.TryParse(depIdString, out var depId))
+        {
+            DepartmentId = depId;
+            await LoadClassesAsync();
+        }
+        else
+        {
+            Console.WriteLine("DepartmentId is missing or invalid in the query.");
+        }
+    }
+
+    private async Task LoadClassesAsync()
+    {
+        isLoading = true;
+        try
+        {
+            classes = await ClassApi.GetClassesByDepartmentAsync(DepartmentId);
+            FilterAndPaginate(); 
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void FilterAndPaginate()
+    {
+        filteredClasses = string.IsNullOrWhiteSpace(searchTerm)
+            ? classes.ToList()
+            : classes.Where(c => c.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        currentPage = Math.Min(currentPage, totalPages); 
+        currentPage = Math.Max(currentPage, 1);         
+
+        paginatedClasses = filteredClasses
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private void PrevPage()
+    {
+        if (HasPrevPage)
+        {
+            currentPage--;
+            FilterAndPaginate();
+        }
+    }
+
+    private void NextPage()
+    {
+        if (HasNextPage)
+        {
+            currentPage++;
+            FilterAndPaginate();
+        }
+    }
+
+    private async Task SaveClass()
+    {
+        classModel.DepartmentId = DepartmentId;
+        await ClassApi.SaveClassAsync(classModel);
+        classModel = new ClassDto { DepartmentId = DepartmentId };
+        await LoadClassesAsync();
+    }
+
+    private async Task DeleteClass(int id)
+    {
+        await ClassApi.DeleteClassAsync(id, DepartmentId);
+        await LoadClassesAsync();
+    }
+
+    private void EditClass(ClassDto classItem)
+    {
+        classModel = new ClassDto
+            {
+                Id = classItem.Id,
+                Name = classItem.Name,
+                DepartmentId = classItem.DepartmentId
+            };
+    }
+
+    private void OnSearchTermChanged(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+        FilterAndPaginate(); 
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = string.Empty;
+        FilterAndPaginate();
+    }
+}

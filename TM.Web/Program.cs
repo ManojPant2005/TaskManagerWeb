@@ -34,6 +34,8 @@ static void ConfigureRefit(IServiceCollection services)
     services.AddRefitClient<IUserApi>(GetReffitSettings)
             .ConfigureHttpClient(SetHttpClient);
 
+    services.AddRefitClient<IClassApi>(GetReffitSettings)
+        .ConfigureHttpClient(SetHttpClient);
 
     static RefitSettings GetReffitSettings(IServiceProvider sp)
     {

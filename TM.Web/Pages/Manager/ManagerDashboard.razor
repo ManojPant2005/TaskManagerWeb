@@ -1,7 +1,79 @@
 ﻿@page "/manager/dashboard"
 
-<h3>Manager Dashboard</h3>
+@inject QuizAuthStateProvider quiz
+
+@inject IDepartmentApi department
+@inject NavigationManager Navigation
+
+<PageTitle>Manager Dashboard</PageTitle>
+
+<SectionContent SectionName="pageTitle">Manager Dashboard</SectionContent>
+
+<h1>Hello @quiz.User?.Name</h1>
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Subject</th>
+                        <th>Access</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (_departments.Length == 0)
+                    {
+                        <tr>
+                            <td colspan="6">No Departments Found</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        string count = "*";
+                        @foreach (var dep in _departments)
+                        {
+                            <tr>
+                                <td>@count</td>
+                                <td>@dep.Id</td>
+                                <td>@dep.Name</td>
+                                <td>@dep.Subject</td>
+                                <td>@dep.AccessCode</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" @onclick="() => NavigateToDashboard(dep.Id)">View Dashboard</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 @code {
+    private DepartmentDto[] _departments = Array.Empty<DepartmentDto>();
+    private DepartmentDto _department = new();
+    private string? ErrorMessage;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDepartmentsAsync();
+    }
+
+    private async Task LoadDepartmentsAsync()
+    {
+        _departments = await department.GetDepartmentAsync();
+    }
+
+    private void NavigateToDashboard(int departmentId)
+    {
+        Navigation.NavigateTo($"/department/dashboard?departmentId={departmentId}");
+    }
 }
+

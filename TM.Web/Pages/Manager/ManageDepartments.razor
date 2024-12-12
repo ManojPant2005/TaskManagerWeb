@@ -1,9 +1,9 @@
 ﻿@page "/manager-departments"
 
 @inject IDepartmentApi department
+@inject NavigationManager Navigation
 
 <SectionContent SectionName="pageTitle">Manage Departments</SectionContent>
-
 
 <div class="container">
     <div class="row">
@@ -12,59 +12,42 @@
                 <DataAnnotationsValidator />
 
                 <div class="bg-white p-3">
-                    <div class="">
-                        <h5 class="m-0 fw-bold">Add/Edit Department</h5>
-                        <hr />
-                        <div class="">
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    Department Name
-                                </label>
-                                <InputText @bind-Value="@_department.Name" class="form-control form-control-sm" />
-                                <ValidationMessage For="() => _department.Name" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    Subject Name
-                                </label>
-                                <InputText @bind-Value="@_department.Subject" class="form-control form-control-sm" />
-                                <ValidationMessage For="() => _department.Subject" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    Access Code
-                                </label>
-                                <InputText @bind-Value="@_department.AccessCode" class="form-control form-control-sm" />
-                                <ValidationMessage For="() => _department.AccessCode" />
-                            </div>
-
-
-                            @if (ErrorMessage != null)
-                            {
-                                <div class="mb-3 border border-danger border-1 d-flex justify-content-between gap-2 align-items-start">
-                                    <p class="m-0 p-1">@ErrorMessage</p>
-                                    <button type="button" class="btn btn btn-danger" @onclick="() => ErrorMessage = null ">X</button>
-                                </div>
-                            }
+                    <h5 class="m-0 fw-bold">Add/Edit Department</h5>
+                    <hr />
+                    <div>
+                        <div class="mb-3">
+                            <label class="form-label">Department Name</label>
+                            <InputText @bind-Value="_department.Name" class="form-control form-control-sm" />
+                            <ValidationMessage For="() => _department.Name" />
                         </div>
-                        <div class="d-flex justify-content-between align-content-center">
-                            @if (!_isBusy)
-                            {
-                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => _department = new()">Cancel</button>
-                                <button type="submit" class="btn btn-sm btn-success">Save Department</button>
-                            }
-                            else
-                            {
-                                <button type="button" disabled class="btn btn-sm btn-secondary">Cancel</button>
-                                <button type="button" disabled class="btn btn-sm btn-secondary">Saving Department..</button>
-                            }
+                        <div class="mb-3">
+                            <label class="form-label">Subject Name</label>
+                            <InputText @bind-Value="_department.Subject" class="form-control form-control-sm" />
+                            <ValidationMessage For="() => _department.Subject" />
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Access Code</label>
+                            <InputText @bind-Value="_department.AccessCode" class="form-control form-control-sm" />
+                            <ValidationMessage For="() => _department.AccessCode" />
+                        </div>
+
+                        @if (ErrorMessage != null)
+                        {
+                            <div class="mb-3 border border-danger">
+                                <p class="m-0 p-1">@ErrorMessage</p>
+                                <button type="button" class="btn btn-danger btn-sm" @onclick="() => ErrorMessage = null">X</button>
+                            </div>
+                        }
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-sm btn-danger" @onclick="() => _department = new()">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-success">Save Department</button>
                     </div>
                 </div>
             </EditForm>
         </div>
-        <div class="col-sm-8 ms-auto">
-            <table class="table table-striped table-hover">
+        <div class="col-sm-8">
+            <table class="table table-striped">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -72,31 +55,29 @@
                         <th>Name</th>
                         <th>Subject</th>
                         <th>Access</th>
-                        <th>Action</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (_departments.Length == 0)
                     {
                         <tr>
-                            <td colspan="4">
-                                <p class="text-danger h5">No Department Found</p>
-                            </td>
+                            <td colspan="6">No Departments Found</td>
                         </tr>
                     }
                     else
                     {
-                        int number = 1;
-                        @foreach (var cat in _departments)
+                        int count = 1;
+                        @foreach (var dep in _departments)
                         {
                             <tr>
-                                <td>@(number++)</td>
-                                <td>@cat.Id</td>
-                                <td>@cat.Name</td>
-                                <td>@cat.Subject</td>
-                                <td>@cat.AccessCode</td>
+                                <td>@count</td>
+                                <td>@dep.Id</td>
+                                <td>@dep.Name</td>
+                                <td>@dep.Subject</td>
+                                <td>@dep.AccessCode</td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-primary" @onclick="() => OnEditDepartment(cat)">Edit</button>
+                                    <button class="btn btn-primary btn-sm" @onclick="() => NavigateToDashboard(dep.Id)">View Dashboard</button>
                                 </td>
                             </tr>
                         }
@@ -108,46 +89,42 @@
 </div>
 
 @code {
-    private DepartmentDto[] _departments = [];
+    private DepartmentDto[] _departments = Array.Empty<DepartmentDto>();
     private DepartmentDto _department = new();
-    private bool _isBusy;
     private string? ErrorMessage;
-    protected override async Task OnInitializedAsync() => await LoadCategoriesAsync();
 
-
-    private void OnEditDepartment(DepartmentDto dp)
+    protected override async Task OnInitializedAsync()
     {
-        _department = dp;
+        await LoadDepartmentsAsync();
     }
-    private async Task LoadCategoriesAsync()
+
+    private async Task LoadDepartmentsAsync()
     {
         _departments = await department.GetDepartmentAsync();
     }
+
     private async Task SaveDepartmentAsync()
     {
         try
         {
-            _isBusy = true;
             var response = await department.SaveDepartmentAsync(_department);
             if (!response.IsSuccess)
             {
-                ErrorMessage = response.ErrorMessage ?? "Unknown error in saving department";
+                ErrorMessage = response.ErrorMessage ?? "Error saving department.";
                 return;
-
             }
 
             _department = new();
-            await LoadCategoriesAsync();
+            await LoadDepartmentsAsync();
         }
         catch (Exception ex)
         {
-
             ErrorMessage = ex.Message;
-        }
-        finally
-        {
-            _isBusy = false;
         }
     }
 
+    private void NavigateToDashboard(int departmentId)
+    {
+        Navigation.NavigateTo($"/department/dashboard?departmentId={departmentId}");
+    }
 }

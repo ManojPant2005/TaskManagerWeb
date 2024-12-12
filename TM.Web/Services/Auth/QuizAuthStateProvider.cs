@@ -26,11 +26,8 @@ namespace TM.Web.Services.Auth
         public override Task<AuthenticationState> GetAuthenticationStateAsync() =>
               _stateTask;
 
-        // Current logged-in user
         public LoggedInUser User { get; private set; }
         public bool IsLoggedIn => User?.Id > 0;
-
-        // Method to set the user state upon login
         public async Task SetLoginAsync(LoggedInUser user)
         {
             User = user;
@@ -41,7 +38,6 @@ namespace TM.Web.Services.Auth
 
         public bool IsInitializing { get; private set; } = true;
 
-        // Method to logout and clear user data
         public async Task SetLogoutAsync()
         {
             User = null;
@@ -50,7 +46,6 @@ namespace TM.Web.Services.Auth
             await _js.InvokeVoidAsync("localStorage.removeItem", UserDataKey);
         }
 
-        // Method to initialize and check for valid token in localStorage
         public async Task InitilizeAsync()
         {
             try
@@ -69,7 +64,6 @@ namespace TM.Web.Services.Auth
                     return;
                 }
 
-                // Check if JWT token is valid
                 if (!IsTokenValid(user.Token))
                 {
                     RedirectToLogin();
@@ -80,7 +74,6 @@ namespace TM.Web.Services.Auth
             }
             catch (Exception ex)
             {
-                // Handle error if necessary
             }
             finally
             {
@@ -88,13 +81,11 @@ namespace TM.Web.Services.Auth
             }
         }
 
-        // Method to redirect the user to login page
         private void RedirectToLogin()
         {
             _nav.NavigateTo("auth/login");
         }
 
-        // Method to check if JWT token is valid
         private static bool IsTokenValid(string token)
         {
             if (string.IsNullOrWhiteSpace(token))
@@ -112,10 +103,9 @@ namespace TM.Web.Services.Auth
             var expTime = long.Parse(expClaim.Value);
             var expDatetimeUtc = DateTimeOffset.FromUnixTimeSeconds(expTime).UtcDateTime;
 
-            return expDatetimeUtc < DateTime.UtcNow;
+            return expDatetimeUtc > DateTime.UtcNow;
         }
 
-        // Set the authentication state based on the logged-in user
         private void SetAuthStateTask()
         {
             if (IsLoggedIn)
@@ -135,8 +125,6 @@ namespace TM.Web.Services.Auth
                 _stateTask = Task.FromResult(authState);
             }
         }
-
-        // New method to check if the current user is in a specific role
         public bool IsInRole(string role)
         {
             return User?.Role == role;

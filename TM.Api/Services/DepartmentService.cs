@@ -58,17 +58,28 @@ namespace TM.Api.Services
                   .Select(c => new DepartmentDto
                   {
                       Name = c.Name,
-                      Subject = c.Subject, // Include the Subject field
+                      Subject = c.Subject, 
                       AccessCode = c.AccessCode,
                       Id = c.Id
                   })
                  .ToArrayAsync();
 
-        public async Task<bool> ValidateSubjectAccessAsync(string subject, string accessCode)
+        public async Task<bool> ValidateSubjectAccessAsync(ValidateSubjectDto dto)
         {
-            return await _task.Departments
-                .AsNoTracking()
-                .AnyAsync(d => d.Subject == subject && d.AccessCode == accessCode);
+            if (dto.SubjectId.HasValue)
+            {
+                return await _task.Departments
+                    .AsNoTracking()
+                    .AnyAsync(d => d.Id == dto.SubjectId.Value && d.AccessCode == dto.AccessCode);
+            }
+            else if (!string.IsNullOrWhiteSpace(dto.Subject))
+            {
+                return await _task.Departments
+                    .AsNoTracking()
+                    .AnyAsync(d => d.Subject == dto.Subject && d.AccessCode == dto.AccessCode);
+            }
+
+            return false;
         }
 
     }

@@ -18,9 +18,11 @@ namespace TM.Api.Endpoints
 
             catGroup.MapGet("/subjects", async (DepartmentService deptService) =>
             Results.Ok(await deptService.GetDepartmentsAsync()));
+
+
             catGroup.MapPost("/validate", async (ValidateSubjectDto dto, DepartmentService deptService) =>
             {
-                bool isValid = await deptService.ValidateSubjectAccessAsync(dto.Subject, dto.AccessCode);
+                bool isValid = await deptService.ValidateSubjectAccessAsync(dto); 
                 return Results.Ok(isValid);
             });
 

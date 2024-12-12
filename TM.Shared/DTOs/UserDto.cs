@@ -1,7 +1,5 @@
 ﻿namespace TM.Shared.DTOs
 {
-    //public record UserDto(int Id, string Name, string Email, string Phone, bool IsApproved);
-
     public class UserDto
     {
         public UserDto(int id, string name, string email, string phone, bool isApproved)

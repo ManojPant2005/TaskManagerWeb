@@ -3,12 +3,12 @@
 @inject QuizAuthStateProvider quiz
 @inject IAuthApi api
 
-<div class="container">
-    <div class="row vh-90">
-        <div class="col-sm-4 mx-auto my-auto border bg-white shadow-lg">
+<div class="container" style="max-width: 90%; min-height: 95vh;">
+    <div class="row vh-95">
+        <div class="col-sm-6 mx-auto my-auto border bg-white shadow-lg" style="min-height: 80vh;">
 
             <div class="mt-3">
-                <h1 class="h3 fw-bold">Create User | Admin Panel</h1>
+                <h1 class="h3 fw-bold text-center">Create User | Admin Panel</h1>
             </div>
             <hr />
 
@@ -50,6 +50,7 @@
                     <div class="mb-3">
                         <label class="form-label">Role: </label>
                         <InputSelect @bind-Value="_model.Role" class="form-control">
+                            <select id="select">Select Role</select>
                             <option value="Manager">Manager</option>
                             <option value="Department">Department</option>
                         </InputSelect>

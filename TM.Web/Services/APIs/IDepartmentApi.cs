@@ -14,7 +14,6 @@ namespace TM.Web.Services.APIs
 
         [Get("/api/department/subjects")]
         Task<DepartmentDto[]> GetSubjectsAsync();
-
         [Post("/api/department/validate")]
         Task<bool> ValidateSubjectAccessAsync([Body] ValidateSubjectDto dto);
 

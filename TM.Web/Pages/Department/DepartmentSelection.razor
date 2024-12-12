@@ -1,8 +1,6 @@
 ﻿@page "/department/selection"
-
 @using System.ComponentModel.DataAnnotations
 @inject IDepartmentApi DepartmentApi
-@attribute [AllowAnonymous]
 @inject NavigationManager NavigationManager
 
 <h3>Select Subject</h3>
@@ -15,17 +13,16 @@ else
 {
     <EditForm Model="selection" OnValidSubmit="OnSubmitAsync">
         <DataAnnotationsValidator />
-
         <div class="mb-3">
             <label for="subject" class="form-label">Subject</label>
-            <InputSelect id="subject" @bind-Value="selection.Subject" class="form-control">
+            <InputSelect id="subject" @bind-Value="selection.SubjectId" class="form-control">
                 <option value="">-- Select Subject --</option>
                 @foreach (var subject in subjects)
                 {
-                    <option value="@subject.Subject">@subject.Subject</option>
+                    <option value="@subject.Id">@subject.Subject</option>
                 }
             </InputSelect>
-            <ValidationMessage For="() => selection.Subject" />
+            <ValidationMessage For="() => selection.SubjectId" />
         </div>
 
         <div class="mb-3">
@@ -54,6 +51,7 @@ else
         try
         {
             subjects = await DepartmentApi.GetSubjectsAsync();
+            Console.WriteLine($"Loaded Subjects: {string.Join(", ", subjects.Select(s => $"{s.Id}-{s.Subject}"))}");
         }
         catch (Exception ex)
         {
@@ -74,11 +72,15 @@ else
         {
             var dto = new ValidateSubjectDto
                 {
-                    Subject = selection.Subject,
+                    SubjectId = selection.SubjectId, 
                     AccessCode = selection.AccessCode
                 };
 
+            Console.WriteLine($"Sending DTO: SubjectId = {dto.SubjectId}, AccessCode = {dto.AccessCode}");
+
             bool isValid = await DepartmentApi.ValidateSubjectAccessAsync(dto);
+
+            Console.WriteLine($"API Response: {isValid}");
 
             if (!isValid)
             {
@@ -86,7 +88,7 @@ else
                 return;
             }
 
-            NavigationManager.NavigateTo("department/dashboard");
+            NavigationManager.NavigateTo($"/department/dashboard?departmentId={selection.SubjectId}");
         }
         catch (Exception ex)
         {
@@ -97,8 +99,7 @@ else
     private class SubjectSelection
     {
         [Required]
-        public string Subject { get; set; } = string.Empty;
-
+        public int SubjectId { get; set; } 
         [Required]
         [MaxLength(10)]
         public string AccessCode { get; set; } = string.Empty;

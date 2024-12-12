@@ -17,6 +17,6 @@ namespace TM.Shared.DTOs
         public string PasswordHash { get; set; }
 
         [Required]
-        public string Role { get; set; } // Added Role property
+        public string Role { get; set; } 
     }
 }

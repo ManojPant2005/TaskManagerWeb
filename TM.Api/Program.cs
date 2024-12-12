@@ -20,6 +20,8 @@ builder.Services.AddDbContext<TaskContext>
 builder.Services.AddTransient<AuthService>();
 builder.Services.AddTransient<DepartmentService>();
 builder.Services.AddTransient<UserService>();
+builder.Services.AddTransient<ClassService>();
+
 
 builder.Services.AddAuthentication(options =>
 {
@@ -50,7 +52,7 @@ builder.Services.AddCors(options =>
         p.WithOrigins(allowedOrigins)
          .AllowAnyHeader()
          .AllowAnyMethod()
-         .AllowCredentials(); // Allow credentials if necessary
+         .AllowCredentials();
     });
 });
 
@@ -77,6 +79,7 @@ app.UseCors();
 app.MapAuthEndpoints();
 app.MapDepartmentEndpoint();   
 app.MapUserEndpoint();  
+app.MapClassEndpoints();    
 
 app.Run();
 
